@@ -11,6 +11,7 @@ require 'vedeu'
 
 module TooDead
   class Menu
-    include Vedeu
+    # include Vedeu
+
   end
 end
