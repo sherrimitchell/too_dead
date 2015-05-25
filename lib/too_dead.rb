@@ -67,7 +67,7 @@ module TooDead
     end
 
     def get_date(message)
-      date_string = prompt(message) do |input|
+      date_string = prompt("#{message} (YYYY-MM-DD format)") do |input|
         input =~ /^\d{4}-\d{2}-\d{2}$/
       end
       DateTime.parse(date_string)
@@ -77,11 +77,22 @@ module TooDead
       name = prompt("What would you like to call your todo?") do |input|
         input =~ /^\w+$/
       end
-      add_date = confirm?("Would you like to add a due date? (YYYY-MM-DD format)")
+      add_date = confirm?("Would you like to add a due date?")
       if add_date
         date = get_date("What date is #{name} due?")
       end
       @todo_list.create(description: name, due_date: date)
+    end
+
+    def change_date(todo)
+      puts todo
+      new_date = get_date("What is the new due date for #{todo.description}?")
+      todo.update(due_date: new_date)
+    end
+
+    def toggle_completion(todo)
+      todo.toggle!
+      puts "#{todo} is now #{todo.finished? : 'done!' ? 'ready for work!' }"
     end
 
     def run
