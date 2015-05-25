@@ -14,6 +14,7 @@ module TooDead
     def initialize
       @user = nil
       @todo_list = nil
+      @show_overdue = false
     end
 
     def prompt(question)
@@ -60,10 +61,49 @@ module TooDead
       @user.todo_lists.find_each do |l|
         puts "#{l.id} => #{l.name}"
       end
-      choices_regex = /^#{@user.todo_lists.pluck(:id).join('|')}^/
+      choices_regex = /^#{@user.todo_lists.pluck(:id).join('|')}$/
       message = "Please pick one of the numbered Todo lists: "
       list_id = prompt(message) { |input| input =~ choices_regex }
       @todo_list = TodoList.find(list_id)
+    end
+
+    def pick_item
+      items = @todo_list.todo_items.where(finished: false)
+      items = items.where("due_date < ?", DateTime.now) if @show_overdue
+      items.find_each do |item|
+        puts "#{item.id} => #{l.description}"
+      end
+      choices_regex = /^#{items.pluck(:id).join('|')}$/
+      message = "Please pick one of the numbered Todo items: "
+      todo_id = prompt(message) { |input| input =~ choices_regex }
+      TodoItem.find(todo_id)
+    end
+
+    def work_on_list
+      puts @todo_list
+      message = "\n\nPlease choose one of the following options:
+                   B) Go Back and pick a different Todo list.
+                   O) Toggle display of Overdue/regular todos.
+
+                   N) Create a new todo.
+                   D) Change a todo's due date.
+                   R) Remove a todo.
+                   F) Mark a todo as finished or unfinished.\n\n"
+      choice = prompt(message) { |input| input =~ /^[bondrf]$/i }.downcase
+      case choice
+      when 'b'
+        @todo_list = nil
+      when 'o'
+        @show_overdue = !@show_overdue
+      when 'n'
+        new_item
+      when 'd'
+        change_date(pick_todo)
+      when 'r'
+        remove_todo(pick_todo)
+      when 'f'
+        toggle_completion(pick_todo)
+      end
     end
 
     def get_date(message)
