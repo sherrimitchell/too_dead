@@ -66,6 +66,21 @@ module TooDead
       @todo_list = TodoList.find(list_id)
     end
 
+    def new_item
+      opts = {}
+      opts[:description] = prompt("What would you like to call your todo?") do |input|
+        input =~ /^\w+$/
+      end
+      add_date = confirm?("Would you like to add a due date? (YYYY-MM-DD format)")
+      if add_date
+        date_string = prompt("When is #{name} due?") do |input|
+          input =~ /^\d{4}-\d{2}-\d{2}$/
+        end
+        opts[:due_date] = DateTime.parse(date_string)
+      end
+      @todo_list.create(opts)
+    end
+
     def run
     end
   end
